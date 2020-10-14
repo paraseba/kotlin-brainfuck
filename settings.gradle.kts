@@ -8,3 +8,8 @@
  */
 
 rootProject.name = "brainfuck"
+
+
+include("parser-combinators")
+include("parser-combinators-extensions")
+

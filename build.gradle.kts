@@ -3,36 +3,74 @@
  *
  * This generated file contains a sample Kotlin application project to get you started.
  */
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+
+// ...
+
+val compileKotlin: KotlinCompile by tasks
+val compileTestKotlin: KotlinCompile by tasks
 
 plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm") version "1.4.10"
-
-    // Apply the application plugin to add support for building a CLI application.
-    application
+    kotlin("kapt") version "1.4.10"
 }
 
-repositories {
-    // Use jcenter for resolving dependencies.
-    // You can declare any Maven/Ivy/file repository here.
-    jcenter()
+allprojects {
+
+    repositories {
+        // Use jcenter for resolving dependencies.
+        // You can declare any Maven/Ivy/file repository here.
+        jcenter()
+        maven("https://dl.bintray.com/arrow-kt/arrow-kt/")
+        maven ("https://oss.jfrog.org/artifactory/oss-snapshot-local/") // for SNAPSHOT builds
+    }
+
+
+    compileKotlin.kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+    compileTestKotlin.kotlinOptions {
+        jvmTarget = JavaVersion.VERSION_1_8.toString()
+    }
+
+
+
 }
 
 dependencies {
+    compile(project(":parser-combinators"))
+    compile(project(":parser-combinators-extensions"))
+
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
 
     // Use the Kotlin JDK 8 standard library.
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
 
+    //val arrowVersion = "0.11.0"
+    val arrowVersion = "1.0.0-SNAPSHOT"
+    implementation( "io.arrow-kt:arrow-core:$arrowVersion")
+    implementation( "io.arrow-kt:arrow-syntax:$arrowVersion")
+    kapt("io.arrow-kt:arrow-meta:$arrowVersion")
+
     // Use the Kotlin test library.
     testImplementation("org.jetbrains.kotlin:kotlin-test")
 
     // Use the Kotlin JUnit integration.
     testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+
+
 }
+/*
+subprojects {
+    version = "1.0"
+}
+
+
 
 application {
     // Define the main class for the application.
     mainClassName = "brainfuck.AppKt"
 }
+*/
