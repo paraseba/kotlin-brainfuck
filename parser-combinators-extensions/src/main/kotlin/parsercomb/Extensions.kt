@@ -2,6 +2,7 @@ package parsercomb
 
 import arrow.Kind
 import arrow.core.*
+import arrow.core.extensions.either.applicativeError.handleError
 import arrow.extension
 import arrow.typeclasses.*
 
@@ -37,13 +38,8 @@ interface ParserSelective: Selective<ForParser>, ParserApplicative {
             val (rest, ff) = f.fix().parse(it)
             if (ff == null)
                 rest toT null
-            else {
-                fun toB(eab: Either<A,B>) : B = when (eab) {
-                    is Either.Left -> ff(eab.a)
-                    is Either.Right -> eab.b
-                }
-                this.fix().map(::toB).fix().parse(rest)
-            }
+            else
+                this.fix().map {it.getOrHandle(ff)}.fix().parse(rest)
         }
     }
 }
@@ -64,23 +60,15 @@ interface ParserAlternative: Alternative<ForParser>, ParserApplicative, ParserMo
             this.combineK(b)
 
     override fun <A> Kind<ForParser, A>.lazyOrElse(b: () -> Kind<ForParser, A>): Kind<ForParser, A> =
-        Parser {
-            val (rest, a) = this.fix().parse(it)
-            if (a != null)
-                rest toT a
-            else
-                b().fix().parse(rest)
-        }
+            fix().convert(onFail = {b().fix().parse(it)}, onSuccess = {it} )
 
 
     override fun <A> Kind<ForParser, A>.combineK(y: Kind<ForParser, A>): Parser<A> = fix().combine(y.fix())
 
     override fun <A> Kind<ForParser, A>.some(): Kind<ForParser, SequenceK<A>> =
-        Parser {
-            val (rest, a) = this.fix().parse(it)
-            if (a == null)
-                rest toT null
-            else
-                mapN(just(a), this.many()) {(sequenceOf(it.a) + it.b).k()}.fix().parse(rest)
-        }
+            fix().convert(
+                    onFail = {it toT null},
+                    onSuccess = {
+                        mapN(just(it.b), this.many()) {(sequenceOf(it.a) + it.b).k()}.fix().parse(it.a)
+                    })
 }

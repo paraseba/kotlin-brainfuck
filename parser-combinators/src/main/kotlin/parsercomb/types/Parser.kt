@@ -2,22 +2,23 @@ package parsercomb.types
 
 import arrow.*
 import arrow.core.Tuple2
+import arrow.core.extensions.setk.monoidal.identity
 import arrow.core.toT
 
 @higherkind
 data class Parser<A>(val parse: (String) -> Tuple2<String, A?>) : ParserOf<A> {
     companion object
 
+    fun <B> convert(onFail: (String) -> Tuple2<String, B?>, onSuccess: (Tuple2<String, A>) -> Tuple2<String, B?> ): Parser<B> = Parser {
+        val (rest, a) = parse(it)
+        if (a == null) onFail(rest) else onSuccess(rest toT a)
+    }
+
     fun combine(y:Parser<A>): Parser<A> =
-            Parser {
-                val (rest, a) = this.parse(it)
-                if (a != null) rest toT a else y.parse(rest)
-            }
+            convert(onFail = {y.parse(it)}, onSuccess = {it} )
 
     fun <B> fmap(f: (A) -> B) : Parser <B> =
-    Parser {
-        this.parse(it).map {it?.let {f(it)} }
-    }
+            convert(onFail = {it toT null}, onSuccess = { it.map(f) })
 }
 
 val charP : Parser<Char> = Parser {
