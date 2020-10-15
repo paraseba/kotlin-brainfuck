@@ -11,16 +11,12 @@ data class Parser<A>(val parse: (String) -> Tuple2<String, A?>) : ParserOf<A> {
     fun combine(y:Parser<A>): Parser<A> =
             Parser {
                 val (rest, a) = this.parse(it)
-                if (a != null)  rest toT a else y.parse(rest)
+                if (a != null) rest toT a else y.parse(rest)
             }
 
     fun <B> fmap(f: (A) -> B) : Parser <B> =
     Parser {
-        val (rest, t) = this.parse(it)
-        if (t != null)
-            rest toT f(t)
-        else
-            rest toT t
+        this.parse(it).map {it?.let {f(it)} }
     }
 }
 

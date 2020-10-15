@@ -22,16 +22,6 @@ interface ParserApply : Apply<ForParser>, ParserFunctor {
                     ff.fix().fmap { f -> f(a) }.parse(rest)
                 else rest toT null
             }
-
-    override fun <A, B> Kind<ForParser, A>.apEval(ff: Eval<Kind<ForParser, (A) -> B>>): Eval<Kind<ForParser, B>> = ff.flatMap {ffp ->
-        Eval.later {Parser {
-            val (rest, a) = this.fix().parse(it)
-            if (a != null)
-                ffp.fix().fmap {f -> f(a)}.parse(rest)
-            else rest toT null
-        }}
-    }
-
 }
 
 @extension
@@ -93,9 +83,4 @@ interface ParserAlternative: Alternative<ForParser>, ParserApplicative, ParserMo
             else
                 mapN(just(a), this.many()) {(sequenceOf(it.a) + it.b).k()}.fix().parse(rest)
         }
-
-
-    /*override fun <A> ParserOf<A>.lazyOrElse(b: () -> ParserOf<A>): Parser<A> {
-
-    }*/
 }

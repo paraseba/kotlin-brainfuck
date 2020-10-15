@@ -1,16 +1,10 @@
 package brainfuck
 
 import arrow.Kind
-import arrow.core.ForId
 import arrow.core.Id
-import arrow.typeclasses.Monad
 import arrow.mtl.StatePartialOf
 import arrow.mtl.State
-import arrow.*
 import arrow.core.extensions.id.monad.monad
-import arrow.fx.*
-import arrow.typeclasses.*
-import arrow.fx.extensions.fx
 import arrow.mtl.extensions.fx
 
 
@@ -44,6 +38,6 @@ object StateMachine : MachineIO<StatePartialOf<MemIO>> {
     override fun getByte(): State<MemIO, Byte?> = State.fx(Id.monad()) {
         val mem = State().get<MemIO>().bind()
         State().set(MemIO(machineIn = mem.machineIn.drop(1), mem.machineOut)).bind()
-        mem.machineIn.first() //fixme infinite input
+        mem.machineIn.first() //fixme stdin closed
     }
 }
