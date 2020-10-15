@@ -2,11 +2,8 @@ package parsecomb
 
 import arrow.Kind
 import arrow.core.*
-import arrow.core.extensions.eq
 import arrow.extension
 import arrow.typeclasses.*
-import parsecomb.parser.semigroupK.semigroupK
-
 
 import parsecomb.types.*
 
@@ -20,18 +17,18 @@ interface ParserFunctor : Functor<ForParser> {
 interface ParserApply : Apply<ForParser>, ParserFunctor {
     override fun <A, B> ParserOf<A>.ap(ff: Kind<ForParser, (A) -> B>): Parser<B> =
             Parser {
-                val (a, rest) = this.fix().parse(it)
+                val (rest, a) = this.fix().parse(it)
                 if (a != null)
                     ff.fix().fmap { f -> f(a) }.parse(rest)
-                else Pair(null, rest)
+                else rest toT null
             }
 
     override fun <A, B> Kind<ForParser, A>.apEval(ff: Eval<Kind<ForParser, (A) -> B>>): Eval<Kind<ForParser, B>> = ff.flatMap {ffp ->
         Eval.later {Parser {
-            val (a, rest) = this.fix().parse(it)
+            val (rest, a) = this.fix().parse(it)
             if (a != null)
                 ffp.fix().fmap {f -> f(a)}.parse(rest)
-            else Pair(null, rest)
+            else rest toT null
         }}
     }
 
@@ -39,7 +36,7 @@ interface ParserApply : Apply<ForParser>, ParserFunctor {
 
 @extension
 interface ParserApplicative: Applicative<ForParser>, ParserApply {
-    override fun <A> just(a: A): Parser<A> = Parser { Pair(a, it) }
+    override fun <A> just(a: A): Parser<A> = Parser { it toT a }
     override fun <A, B> ParserOf<A>.map(f: (A) -> B): Parser<B> = fix().fmap(f)
 }
 
@@ -47,9 +44,9 @@ interface ParserApplicative: Applicative<ForParser>, ParserApply {
 interface ParserSelective: Selective<ForParser>, ParserApplicative {
     override fun <A, B> Kind<ForParser, Either<A, B>>.select(f: Kind<ForParser, (A) -> B>): Parser<B> {
         return Parser {
-            val (ff, rest) = f.fix().parse(it)
+            val (rest, ff) = f.fix().parse(it)
             if (ff == null)
-                Pair(null, rest)
+                rest toT null
             else {
                 fun toB(eab: Either<A,B>) : B = when (eab) {
                     is Either.Left -> ff(eab.a)
@@ -68,7 +65,7 @@ interface ParserSemigroupK: SemigroupK<ForParser> {
 
 @extension
 interface ParserMonoidK: MonoidK<ForParser>, ParserSemigroupK {
-    override fun <A> empty(): Parser<A> = Parser {Pair(null, it)}
+    override fun <A> empty(): Parser<A> = Parser { it toT null}
 }
 
 @extension
@@ -78,9 +75,9 @@ interface ParserAlternative: Alternative<ForParser>, ParserApplicative, ParserMo
 
     override fun <A> Kind<ForParser, A>.lazyOrElse(b: () -> Kind<ForParser, A>): Kind<ForParser, A> =
         Parser {
-            val (a,rest) = this.fix().parse(it)
+            val (rest, a) = this.fix().parse(it)
             if (a != null)
-                Pair(a, rest)
+                rest toT a
             else
                 b().fix().parse(rest)
         }
@@ -90,9 +87,9 @@ interface ParserAlternative: Alternative<ForParser>, ParserApplicative, ParserMo
 
     override fun <A> Kind<ForParser, A>.some(): Kind<ForParser, SequenceK<A>> =
         Parser {
-            val (a,rest) = this.fix().parse(it)
+            val (rest, a) = this.fix().parse(it)
             if (a == null)
-                Pair(null, rest)
+                rest toT null
             else
                 mapN(just(a), this.many()) {(sequenceOf(it.a) + it.b).k()}.fix().parse(rest)
         }

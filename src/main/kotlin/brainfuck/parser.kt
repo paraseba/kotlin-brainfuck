@@ -35,4 +35,4 @@ val loopOp : Parser<Op> = mapN(charParser('['), operations, charParser(']')) { L
 
 val programP : Parser<Program> = operations.apTap(eof).fmap { Program(it.toList()) }
 
-fun parse(program: String) : Program? = programP.parse(program).component1()
+fun parse(program: String) : Program? = programP.parse(program).b

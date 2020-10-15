@@ -1,41 +1,42 @@
 package brainfuck
 
 import arrow.core.k
+import arrow.core.toT
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 class ParserTest {
     @Test fun incPSucc() {
-        assertEquals(Pair(Inc(1), ""), incP.parse("+"))
+        assertEquals("" toT Inc(1), incP.parse("+"))
     }
 
     @Test fun incPUnsucc() {
-        assertEquals(Pair(null, "-"), incP.parse("-"))
+        assertEquals("-" toT null, incP.parse("-"))
     }
 
     @Test fun simpleOpSucc() {
-        assertEquals(Pair(Inc(-1), "+"), simpleOpP.parse("-+"))
+        assertEquals("+" toT Inc(-1), simpleOpP.parse("-+"))
     }
 
     @Test fun simpleLoop() {
-        assertEquals(Pair(Loop(listOf(Inc(1),Right(1), Right(-1))), "ab"), loopOp.parse("[+><]ab"))
+        assertEquals("ab" toT Loop(listOf(Inc(1),Right(1), Right(-1))), loopOp.parse("[+><]ab"))
     }
 
     @Test fun nestedLoop() {
-        assertEquals(Pair(Loop(listOf(Inc(1),Loop(listOf(Right(1))), Right(-1))), "ab"), loopOp.parse("[+[>]<]ab"))
+        assertEquals("ab" toT Loop(listOf(Inc(1),Loop(listOf(Right(1))), Right(-1))), loopOp.parse("[+[>]<]ab"))
     }
 
     @Test fun simpleOperations() {
-        assertEquals(Pair(listOf(Inc(1), Inc(-1), Right(1)), ""), operations.parse("+->abc"))
+        assertEquals("" toT listOf(Inc(1), Inc(-1), Right(1)), operations.parse("+->abc"))
     }
 
     @Test fun loopOperations() {
-        assertEquals(Pair(listOf(Loop(listOf(Inc(1))),Right(1)),"") , operations.parse("[+]>abc"))
+        assertEquals("" toT listOf(Loop(listOf(Inc(1))),Right(1)) , operations.parse("[+]>abc"))
     }
 
     @Test fun operationsLoop() {
-        assertEquals(Pair(listOf(Right(1), Out(1), Loop(listOf(Inc(1))),),"") , operations.parse(">.[+]abc"))
+        assertEquals("" toT listOf(Right(1), Out(1), Loop(listOf(Inc(1)))) , operations.parse(">.[+]abc"))
     }
 
     @Test fun parseProgram() {

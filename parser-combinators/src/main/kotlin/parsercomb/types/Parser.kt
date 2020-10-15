@@ -1,45 +1,49 @@
 package parsecomb.types
 
 import arrow.*
+import arrow.core.Tuple2
+import arrow.core.toT
 
 @higherkind
-data class Parser<A>(val parse: (String) -> Pair<A?, String>) : ParserOf<A> {
+data class Parser<A>(val parse: (String) -> Tuple2<String, A?>) : ParserOf<A> {
     companion object
 
     fun combine(y:Parser<A>): Parser<A> =
             Parser {
-                val (a,rest) = this.parse(it)
-                if (a != null)  Pair(a, rest) else y.parse(rest)
+                val (rest, a) = this.parse(it)
+                if (a != null)  rest toT a else y.parse(rest)
             }
 
     fun <B> fmap(f: (A) -> B) : Parser <B> =
     Parser {
-        val (t, rest) = this.parse(it)
+        val (rest, t) = this.parse(it)
         if (t != null)
-            Pair(f(t), rest)
+            rest toT f(t)
         else
-            Pair(t, rest)
+            rest toT t
     }
 }
 
 val charP : Parser<Char> = Parser {
     if (it.isNotEmpty())
-        Pair(it[0], it.drop(1))
+        it.drop(1) toT it[0]
     else
-        Pair(null, it)
+        it toT null
 }
 
 fun charParser(c: Char) : Parser<Char> = satisfy(charP) {it == c}
+
 fun noneOf(chars: Set<Char>) : Parser<Char> = satisfy(charP) {! chars.contains(it)}
+
 val eof : Parser<Unit> = Parser {
     if (it.isEmpty())
-        Pair(Unit, it)
+        it toT Unit
     else
-        Pair(null, it)
+        it toT null
 }
 
 fun satisfy(parser: Parser<Char>, predicate: (Char) -> Boolean) : Parser<Char> =
         Parser { s ->
-            val (c, rest) = parser.parse(s)
-            if (c?.let {predicate(it)} == true) Pair(c, rest) else Pair(null, s)
+            val (rest, c) = parser.parse(s)
+            if (c?.let {predicate(it)} == true) rest toT c else s toT null
             }
