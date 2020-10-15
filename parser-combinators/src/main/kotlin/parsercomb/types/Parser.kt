@@ -1,4 +1,4 @@
-package parsecomb.types
+package parsercomb.types
 
 import arrow.*
 import arrow.core.Tuple2

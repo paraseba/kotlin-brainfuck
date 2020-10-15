@@ -1,12 +1,12 @@
 package brainfuck
 
 import arrow.core.SequenceK
-import parsecomb.parser.alternative.*
-import parsecomb.parser.apply.apTap
-import parsecomb.parser.apply.followedBy
-import parsecomb.types.*
-import parsecomb.parser.functor.mapConst
-import parsecomb.parser.apply.mapN
+import parsercomb.parser.alternative.*
+import parsercomb.parser.apply.apTap
+import parsercomb.parser.apply.followedBy
+import parsercomb.types.*
+import parsercomb.parser.functor.mapConst
+import parsercomb.parser.apply.mapN
 
 
 fun mkParser(c: Char, op: Op) : Parser<Op> = charParser(c).mapConst(op)

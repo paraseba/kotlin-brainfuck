@@ -1,11 +1,11 @@
-package parsecomb
+package parsercomb
 
 import arrow.Kind
 import arrow.core.*
 import arrow.extension
 import arrow.typeclasses.*
 
-import parsecomb.types.*
+import parsercomb.types.*
 
 
 @extension
