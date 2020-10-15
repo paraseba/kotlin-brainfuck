@@ -2,6 +2,7 @@ package parsecomb
 
 import arrow.Kind
 import arrow.core.*
+import arrow.core.extensions.eq
 import arrow.extension
 import arrow.typeclasses.*
 import parsecomb.parser.semigroupK.semigroupK

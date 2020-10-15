@@ -52,6 +52,8 @@ dependencies {
     val arrowVersion = "1.0.0-SNAPSHOT"
     implementation( "io.arrow-kt:arrow-core:$arrowVersion")
     implementation( "io.arrow-kt:arrow-syntax:$arrowVersion")
+    implementation( "io.arrow-kt:arrow-mtl:$arrowVersion")
+    implementation( "io.arrow-kt:arrow-fx:$arrowVersion")
     kapt("io.arrow-kt:arrow-meta:$arrowVersion")
 
     // Use the Kotlin test library.

@@ -1,5 +1,19 @@
 package brainfuck
 
+import arrow.Kind
+import arrow.core.ForId
+import arrow.core.Id
+import arrow.typeclasses.Monad
+import arrow.mtl.StatePartialOf
+import arrow.mtl.State
+import arrow.*
+import arrow.core.extensions.id.monad.monad
+import arrow.fx.*
+import arrow.typeclasses.*
+import arrow.fx.extensions.fx
+import arrow.mtl.extensions.fx
+
+
 sealed class Op
 
 data class Right(val n: Int) : Op()
@@ -12,5 +26,24 @@ data class Program(val operations: List<Op>)
 
 typealias MemOffset = Int
 
-class Machine(val memory: Array<Byte>, val pointer: MemOffset)
+class Machine<M>(val memory: Array<Byte>, var pointer: MemOffset, val io: MachineIO<M>)
 
+interface MachineIO<M> {
+    fun putByte(b: Byte): Kind<M, Unit>
+    fun getByte(): Kind<M, Byte?>
+}
+
+data class MemIO(val machineIn: Sequence<Byte>, val machineOut: List<Byte>) {
+    fun printOut() : String = String(machineOut.toByteArray())
+}
+
+object StateMachine : MachineIO<StatePartialOf<MemIO>> {
+    override fun putByte(b: Byte): State<MemIO, Unit> =
+        State().modify { MemIO(it.machineIn, it.machineOut + b) }
+
+    override fun getByte(): State<MemIO, Byte?> = State.fx(Id.monad()) {
+        val mem = State().get<MemIO>().bind()
+        State().set(MemIO(machineIn = mem.machineIn.drop(1), mem.machineOut)).bind()
+        mem.machineIn.first() //fixme infinite input
+    }
+}
