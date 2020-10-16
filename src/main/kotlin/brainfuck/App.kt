@@ -3,13 +3,10 @@
  */
 package brainfuck
 
-class App {
-    val greeting: String
-        get() {
-            return "Hello world."
-        }
-}
+import java.io.File
 
 fun main(args: Array<String>) {
-    println(App().greeting)
+    println("Starting at " + args[0])
+    evalFile(File(args[0]))
+    println("\nDone")
 }

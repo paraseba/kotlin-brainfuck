@@ -1,11 +1,15 @@
 package brainfuck
 
 import arrow.Kind
+import arrow.core.ForId
 import arrow.core.Id
 import arrow.mtl.StatePartialOf
 import arrow.mtl.State
 import arrow.core.extensions.id.monad.monad
+import arrow.fx.ForIO
+import arrow.fx.IO
 import arrow.mtl.extensions.fx
+import java.util.*
 
 
 sealed class Op
@@ -40,4 +44,17 @@ object StateMachine : MachineIO<StatePartialOf<MemIO>> {
         State().set(MemIO(machineIn = mem.machineIn.drop(1), mem.machineOut)).bind()
         mem.machineIn.first() //fixme stdin closed
     }
+}
+
+object IOMachine : MachineIO<ForId> {
+    private val reader = Scanner(System.`in`)
+
+    override fun putByte(b: Byte): Id<Unit> {
+        print(b.toChar())
+        return Id.just(Unit)
+    }
+
+    override fun getByte(): Id<Byte?> =
+        Id.just(reader.nextByte())
+
 }

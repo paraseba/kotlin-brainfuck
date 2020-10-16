@@ -14,6 +14,7 @@ plugins {
     // Apply the Kotlin JVM plugin to add support for Kotlin.
     id("org.jetbrains.kotlin.jvm") version "1.4.10"
     kotlin("kapt") version "1.4.10"
+    application
 }
 
 allprojects {
@@ -69,10 +70,10 @@ subprojects {
     version = "1.0"
 }
 
+*/
 
 
 application {
     // Define the main class for the application.
     mainClassName = "brainfuck.AppKt"
 }
-*/
