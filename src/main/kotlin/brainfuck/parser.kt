@@ -7,6 +7,7 @@ import parsercomb.parser.apply.followedBy
 import parsercomb.types.*
 import parsercomb.parser.functor.mapConst
 import parsercomb.parser.apply.mapN
+import parsercomb.parser.functor.map
 
 
 fun mkParser(c: Char, op: Op) : Parser<Op> = charParser(c).mapConst(op)
@@ -29,10 +30,10 @@ fun opP() : Parser<Op> =
         .followedBy(simpleOpP.lazyOrElse { loopOp })
         .apTap(garbage)
 
-val operations : Parser<List<Op>> = opP().some().fmap {it.toList()}
+val operations : Parser<List<Op>> = opP().some().map {it.toList()}
 
 val loopOp : Parser<Op> = mapN(charParser('['), operations, charParser(']')) { Loop(it.b.toList()) }
 
-val programP : Parser<Program> = operations.apTap(eof).fmap { Program(it.toList()) }
+val programP : Parser<Program> = operations.apTap(eof).map { Program(it.toList()) }
 
 fun parse(program: String) : Program? = programP.parse(program).b
