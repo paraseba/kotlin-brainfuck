@@ -5,6 +5,7 @@ import arrow.core.Tuple2
 import arrow.core.extensions.setk.monoidal.identity
 import arrow.core.toT
 
+
 @higherkind
 data class Parser<A>(val parse: (String) -> Tuple2<String, A?>) : ParserOf<A> {
     companion object
@@ -39,7 +40,7 @@ val eof : Parser<Unit> = Parser {
         it toT null
 }
 
-fun satisfy(parser: Parser<Char>, predicate: (Char) -> Boolean) : Parser<Char> =
+fun <T> satisfy(parser: Parser<T>, predicate: (T) -> Boolean) : Parser<T> =
         Parser { s ->
             val (rest, c) = parser.parse(s)
             if (c?.let {predicate(it)} == true) rest toT c else s toT null
