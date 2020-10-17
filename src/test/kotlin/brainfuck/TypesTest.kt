@@ -11,6 +11,11 @@ import kotlin.test.assertEquals
 
 class TypesTest {
     @Test
+    fun machineUpdate() {
+        assertEquals(1, Machine(listOf(0), 0, StateMachine).update {(it+1).toByte()}.peek())
+    }
+
+    @Test
     fun testStateMachine() {
         val ops : State<MemIO, Byte?> = State.fx(Id.monad()) {
             val b1 = StateMachine.getByte().bind()

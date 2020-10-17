@@ -18,7 +18,6 @@ plugins {
 }
 
 allprojects {
-
     repositories {
         // Use jcenter for resolving dependencies.
         // You can declare any Maven/Ivy/file repository here.
@@ -34,14 +33,11 @@ allprojects {
     compileTestKotlin.kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
-
-
-
 }
 
 dependencies {
-    compile(project(":parser-combinators"))
-    compile(project(":parser-combinators-extensions"))
+    implementation(project(":parser-combinators"))
+    implementation(project(":parser-combinators-extensions"))
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))
@@ -65,15 +61,18 @@ dependencies {
 
 
 }
-/*
-subprojects {
-    version = "1.0"
-}
-
-*/
 
 
 application {
     // Define the main class for the application.
-    mainClassName = "brainfuck.AppKt"
+    mainClass.set("brainfuck.AppKt")
 }
+
+//
+//tasks.withType<Jar> {
+//    manifest {
+//        attributes["Main-Class"] = application.mainClassName
+//    }
+//
+//    from(configurations.runtimeClasspath.get().map {if (it.isDirectory) it else zipTree(it)})
+//}

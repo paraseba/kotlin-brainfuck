@@ -8,6 +8,8 @@ import arrow.mtl.State
 import arrow.core.extensions.id.monad.monad
 import arrow.fx.ForIO
 import arrow.fx.IO
+import arrow.fx.extensions.fx
+import arrow.fx.void
 import arrow.mtl.extensions.fx
 import java.util.*
 
@@ -24,7 +26,16 @@ data class Program(val operations: List<Op>)
 
 typealias MemOffset = Int
 
-class Machine<M>(val memory: Array<Byte>, var pointer: MemOffset, val io: MachineIO<M>)
+data class Machine<M>(val memory: List<Byte>, val pointer: MemOffset, val io: MachineIO<M>) {
+
+    fun update(f : (Byte) -> Byte): Machine<M> =
+            copy(memory = memory.subList(0, pointer) + f(peek()) + memory.subList(minOf(pointer + 1, memory.size), memory.size))
+
+    fun shift(offset: MemOffset) : Machine<M> = copy(pointer = pointer + offset)
+
+    fun peek(): Byte = memory[pointer]
+    fun poke(value: Byte) : Machine<M> = update {value}
+}
 
 interface MachineIO<M> {
     fun putByte(b: Byte): Kind<M, Unit>
@@ -40,21 +51,16 @@ object StateMachine : MachineIO<StatePartialOf<MemIO>> {
         State().modify { MemIO(it.machineIn, it.machineOut + b) }
 
     override fun getByte(): State<MemIO, Byte?> = State.fx(Id.monad()) {
-        val mem = State().get<MemIO>().bind()
-        State().set(MemIO(machineIn = mem.machineIn.drop(1), mem.machineOut)).bind()
+        val mem = !State().get<MemIO>()
+        !State().set(MemIO(machineIn = mem.machineIn.drop(1), mem.machineOut))
         mem.machineIn.first() //fixme stdin closed
     }
 }
 
-object IOMachine : MachineIO<ForId> {
+object IOMachine : MachineIO<ForIO> {
     private val reader = Scanner(System.`in`)
 
-    override fun putByte(b: Byte): Id<Unit> {
-        print(b.toChar())
-        return Id.just(Unit)
-    }
+    override fun putByte(b: Byte): IO<Unit> = IO  { print(b.toChar()) }
 
-    override fun getByte(): Id<Byte?> =
-        Id.just(reader.nextByte())
-
+    override fun getByte(): IO<Byte?> = IO { reader.nextByte() }
 }

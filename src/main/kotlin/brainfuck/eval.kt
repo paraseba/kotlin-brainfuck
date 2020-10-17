@@ -1,67 +1,55 @@
 package brainfuck
 
 import arrow.Kind
-import arrow.core.ForId
-import arrow.core.Id
-import arrow.core.extensions.id.monad.monad
-import arrow.core.extensions.list.foldable.traverse_
-import arrow.fx.ForIO
+import arrow.core.extensions.list.foldable.foldLeft
+import arrow.core.extensions.list.foldable.foldM
 import arrow.fx.IO
 import arrow.fx.extensions.io.monad.monad
+import arrow.fx.fix
 import arrow.typeclasses.Monad
 import java.io.File
 
 
-fun <M> processOp(MO: Monad<M>, machine: brainfuck.Machine<M>, op: Op): Kind<M, Unit> {
+fun <M> processOp(MO: Monad<M>, machine: Machine<M>, op: Op): Kind<M, Machine<M>> {
     return when (op) {
-        is Inc -> {
-            machine.memory[machine.pointer] = (machine.memory[machine.pointer] + op.n).toByte()
-            MO.just(Unit)
+        is Inc -> MO.just(machine.update {(it + op.n).toByte() })
+        is Right -> MO.just(machine.shift(op.n))
+        is Out -> MO.run {
+            machine.io.putByte(machine.peek()).mapConst(machine)
         }
-
-        is Right -> {
-            machine.pointer += op.n
-            MO.just(Unit)
-        }
-
-        is Out -> {
-            machine.io.putByte(machine.memory[machine.pointer])
-        }
-
-        is Inp -> {
-            MO.run {
-                machine.io.getByte().flatMap { b: Byte? ->
-                    b?.let { machine.memory[machine.pointer] = it }
-                    MO.just(Unit)
-                }
+        is Inp -> MO.run {
+            machine.io.getByte().flatMap { b: Byte? ->
+                just(if (b == null) machine else machine.poke(b))
             }
         }
-        is Loop -> {
-            fun go (ops: List<Op>) : Kind<M, Unit> =
-                    if (machine.memory[machine.pointer] != 0.toByte())
-                        MO.run {
-                            op.operations.traverse_(MO) {processOp(MO, machine, it)}.followedBy(go(ops))
-                        }
-                    else
-                        MO.just(Unit)
 
-            go(op.operations)
+        is Loop -> {
+            fun go(machine: Machine<M>): Kind<M, Machine<M>>  = MO.run {
+                if(machine.peek() == 0.toByte())
+                    just(machine)
+                else
+                    eval(MO, machine, Program(op.operations)).flatMap {go(it)}
+            }
+            go(machine)
         }
     }
 }
 
+fun <M> eval(MO: Monad<M>, machine: Machine<M>, program: Program): Kind<M, Machine<M>> =
+    program.operations.foldM(MO, machine, {mac, op -> processOp(MO, mac, op)})
 
-fun <M> eval(MO: Monad<M>, machine: Machine<M>, program: Program): Kind<M, Unit> =
-    program.operations.traverse_(MO) { processOp(MO, machine, it)}
-
-fun evalConsole(machine: Machine<ForId>, program: Program): Unit {
-    program.operations.traverse_(Id.monad()) { processOp(Id.monad(), machine, it) }
-}
-
-fun evalFile(file: File, memory: Int = 1024*1024 ): Unit {
+fun evalFile(file: File, memory: Int = 1024): Unit {
     val program = parse(file.readText())
-    val machine = Machine(Array<Byte>(memory) { 0 }, 0, IOMachine)
+    val machine = Machine(List(memory) {0}, 0, IOMachine)
 
     if (program != null)
-        evalConsole(machine, program)
+        eval(IO.monad(), machine, program).fix().unsafeRunAsync {
+            it.fold(
+                    {println("Error evaluating program: " + it.localizedMessage + "\n\n" + it.printStackTrace())},
+                    {println("Done.")}
+            )
+        }
+    else
+        println("Can't parse program")
+
 }

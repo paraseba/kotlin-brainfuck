@@ -18,7 +18,7 @@ plugins {
 }
 
 dependencies {
-    compile(project(":parser-combinators"))
+    implementation(project(":parser-combinators"))
 
     // Align versions of all Kotlin components
     implementation(platform("org.jetbrains.kotlin:kotlin-bom"))

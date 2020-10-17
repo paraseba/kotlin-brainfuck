@@ -8,5 +8,4 @@ import java.io.File
 fun main(args: Array<String>) {
     println("Starting at " + args[0])
     evalFile(File(args[0]))
-    println("\nDone")
 }
