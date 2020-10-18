@@ -1,46 +1,43 @@
 package brainfuck
 
 import arrow.core.toT
-import kotlin.test.Test
-import kotlin.test.assertEquals
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
 
-class ParserTest {
-    @Test fun incPSucc() {
-        assertEquals("" toT Inc(1), incP.parse("+"))
+class ParserTest : StringSpec({
+
+    "incP parses + to Inc(1)" {
+        incP.parse("+") shouldBe ("" toT Inc(1))
     }
 
-    @Test fun incPUnsucc() {
-        assertEquals("-" toT null, incP.parse("-"))
+    "incP can't parse -" {
+        incP.parse("-") shouldBe ("-" toT null)
     }
 
-    @Test fun simpleOpSucc() {
-        assertEquals("+" toT Inc(-1), simpleOpP.parse("-+"))
+    "simpleOpP parses -+" {
+        simpleOpP.parse("-+") shouldBe ("+" toT Inc(-1))
     }
 
-    @Test fun simpleLoop() {
-        assertEquals("ab" toT Loop(listOf(Inc(1),Right(1), Right(-1))), loopOp.parse("[+><]ab"))
+    "loop can parse with residual" {
+        loopOp.parse("[+><]ab") shouldBe ("ab" toT Loop(listOf(Inc(1), Right(1), Right(-1))))
     }
 
-    @Test fun nestedLoop() {
-        assertEquals("ab" toT Loop(listOf(Inc(1),Loop(listOf(Right(1))), Right(-1))), loopOp.parse("[+[>]<]ab"))
+    "loopOp can parse nested loops" {
+        loopOp.parse("[+[>]<]ab") shouldBe ("ab" toT Loop(listOf(Inc(1), Loop(listOf(Right(1))), Right(-1))))
     }
 
-    @Test fun simpleOperations() {
-        assertEquals("" toT listOf(Inc(1), Inc(-1), Right(1)), operations.parse("+->abc"))
+    "operations parses multiple simple ones" {
+        operations.parse("+->abc") shouldBe ("" toT listOf(Inc(1), Inc(-1), Right(1)))
     }
 
-    @Test fun loopOperations() {
-        assertEquals("" toT listOf(Loop(listOf(Inc(1))),Right(1)) , operations.parse("[+]>abc"))
+    "operations parses loops" {
+        operations.parse(">.[+]abc") shouldBe ("" toT listOf(Right(1), Out(1), Loop(listOf(Inc(1)))))
     }
 
-    @Test fun operationsLoop() {
-        assertEquals("" toT listOf(Right(1), Out(1), Loop(listOf(Inc(1)))) , operations.parse(">.[+]abc"))
-    }
-
-    @Test fun parseProgram() {
-        val innerLoop =  Loop(listOf(Inc(-1)))
-        val loop =  Loop(listOf(Inc(1), Inp, Out(1), innerLoop, Right(-1), Right(-1)))
+    "full parser skips garbage" {
+        val innerLoop = Loop(listOf(Inc(-1)))
+        val loop = Loop(listOf(Inc(1), Inp, Out(1), innerLoop, Right(-1), Right(-1)))
         val init = listOf(Inc(1), Right(1), Right(-1), Inc(-1))
-        assertEquals(Program(init + listOf(loop)), parse("garbage   +><-[+,.[  garbage  -   more garbage]<<] garbage"))
+        parse("garbage   +><-[+,.[  garbage  -   more garbage]<<] garbage") shouldBe Program(init + listOf(loop))
     }
-}
+})

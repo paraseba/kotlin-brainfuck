@@ -5,18 +5,16 @@ import arrow.core.extensions.id.monad.monad
 import arrow.core.fix
 import arrow.mtl.State
 import arrow.mtl.extensions.fx
-import org.junit.Test
-import kotlin.test.assertEquals
+import io.kotest.core.spec.style.StringSpec
+import io.kotest.matchers.shouldBe
 
 
-class TypesTest {
-    @Test
-    fun machineUpdate() {
-        assertEquals(1, Machine(listOf(0), 0, StateMachine).update {(it+1).toByte()}.peek())
+class TypesTest : StringSpec({
+    "update machine memory" {
+        Machine(listOf(0), 0, StateMachine).update {(it+1).toByte()}.peek() shouldBe 1
     }
 
-    @Test
-    fun testStateMachine() {
+    "run State effect on machine" {
         val ops : State<MemIO, Byte?> = State.fx(Id.monad()) {
             val b1 = StateMachine.getByte().bind()
             val b2 = StateMachine.getByte().bind()
@@ -25,12 +23,10 @@ class TypesTest {
         }
 
         val empty = MemIO(generateSequence(0) {it.inc()} , emptyList())
-        val (mem, res) = ops.runF(empty).fix().extract()
+        val (io, res) = ops.runF(empty).fix().extract()
 
-        assertEquals(2, mem.machineIn.first())
-        assertEquals(1, mem.machineOut.size)
-        assertEquals(127, mem.machineOut[0])
-        assertEquals(1, res)
+        io.machineIn.first() shouldBe 2
+        io.machineOut shouldBe listOf(127.toByte())
+        res shouldBe 1
     }
-
-}
+})

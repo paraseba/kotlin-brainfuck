@@ -33,6 +33,11 @@ allprojects {
     compileTestKotlin.kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+
+    tasks.withType<Test> {
+        useJUnitPlatform()
+    }
+
 }
 
 dependencies {
@@ -54,11 +59,14 @@ dependencies {
     kapt("io.arrow-kt:arrow-meta:$arrowVersion")
 
     // Use the Kotlin test library.
-    testImplementation("org.jetbrains.kotlin:kotlin-test")
+    //testImplementation("org.jetbrains.kotlin:kotlin-test")
 
     // Use the Kotlin JUnit integration.
-    testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
+    //testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
+    testImplementation("io.kotest:kotest-runner-junit5:4.3.0") // for kotest framework
+    testImplementation("io.kotest:kotest-assertions-core:4.3.0") // for kotest core jvm assertions
+    testImplementation("io.kotest:kotest-property:4.3.0") // for kotest property test
 
 }
 
