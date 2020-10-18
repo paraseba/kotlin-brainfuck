@@ -1,11 +1,7 @@
 #Taken from https://github.com/marketplace/actions/gradle-command
 #
 name: Run Gradle on PRs
-on:
-  push:
-    branches: [ master ]
-  pull_request:
-    branches: [ master ]
+on: [push]
 jobs:
   gradle:
     strategy:
