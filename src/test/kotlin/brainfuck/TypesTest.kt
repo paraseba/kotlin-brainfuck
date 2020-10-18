@@ -24,7 +24,6 @@ class TypesTest {
             b1?.plus(b2 ?: 0)?.toByte()
         }
 
-        fun inc(b: Byte) : Byte = (b + 1).toByte()
         val empty = MemIO(generateSequence(0) {it.inc()} , emptyList())
         val (mem, res) = ops.runF(empty).fix().extract()
 

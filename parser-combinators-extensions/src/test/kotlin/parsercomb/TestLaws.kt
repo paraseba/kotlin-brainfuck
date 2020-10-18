@@ -1,7 +1,5 @@
 package parsercomb
 
-import parsercomb.parser.functor.functor
-
 import kotlin.test.Test
 import kotlin.test.assertEquals
 

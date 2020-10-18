@@ -1,9 +1,8 @@
 package parsercomb.types
 
-import arrow.*
 import arrow.core.Tuple2
-import arrow.core.extensions.setk.monoidal.identity
 import arrow.core.toT
+import arrow.higherkind
 
 
 @higherkind

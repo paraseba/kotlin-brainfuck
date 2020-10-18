@@ -1,36 +1,22 @@
 package brainfuck
 
-import arrow.Kind
-import arrow.core.ForId
-import arrow.mtl.State
-
-import arrow.core.Id
-import arrow.core.Tuple2
 import arrow.core.extensions.id.comonad.extract
-import arrow.core.extensions.id.monad.monad
-import arrow.core.extensions.list.foldable.traverse_
 import arrow.core.extensions.sequence.foldable.isEmpty
-
-import arrow.core.fix
 import arrow.fx.IO
 import arrow.fx.extensions.fx
 import arrow.fx.extensions.io.monad.monad
 import arrow.fx.fix
-import arrow.mtl.ForStateT
-import arrow.mtl.StateT
-import arrow.mtl.extensions.fx
+import arrow.mtl.State
 import arrow.mtl.run
-import arrow.mtl.extensions.statet.monad.monad as stateTMonad
 import org.junit.Test
-import kotlin.system.measureTimeMillis
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 
 class EvalTest {
 
-    val helloWorld = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
-    val fibonacci = "+++++++++++\n" +
+    private val helloWorld = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
+    private val fibonacci = "+++++++++++\n" +
             ">+>>>>++++++++++++++++++++++++++++++++++++++++++++\n" +
             ">++++++++++++++++++++++++++++++++<<<<<<[>[>>>>>>+>\n" +
             "+<<<<<<<-]>>>>>>>[<<<<<<<+>>>>>>>-]<[>++++++++++[-\n" +

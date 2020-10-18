@@ -1,12 +1,15 @@
+@file:Suppress("OverridingDeprecatedMember")
+
 package parsercomb
 
 import arrow.Kind
 import arrow.core.*
-import arrow.core.extensions.either.applicativeError.handleError
 import arrow.extension
 import arrow.typeclasses.*
-
-import parsercomb.types.*
+import parsercomb.types.ForParser
+import parsercomb.types.Parser
+import parsercomb.types.ParserOf
+import parsercomb.types.fix
 
 
 @extension

@@ -1,7 +1,6 @@
 package brainfuck
 
 import arrow.Kind
-import arrow.core.extensions.list.foldable.foldLeft
 import arrow.core.extensions.list.foldable.foldM
 import arrow.fx.IO
 import arrow.fx.extensions.io.monad.monad

@@ -1,15 +1,12 @@
 package brainfuck
 
 import arrow.Kind
-import arrow.core.ForId
 import arrow.core.Id
-import arrow.mtl.StatePartialOf
-import arrow.mtl.State
 import arrow.core.extensions.id.monad.monad
 import arrow.fx.ForIO
 import arrow.fx.IO
-import arrow.fx.extensions.fx
-import arrow.fx.void
+import arrow.mtl.State
+import arrow.mtl.StatePartialOf
 import arrow.mtl.extensions.fx
 import java.util.*
 
