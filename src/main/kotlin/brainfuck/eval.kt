@@ -9,40 +9,40 @@ import arrow.typeclasses.Monad
 import java.io.File
 
 
-fun <M> processOp(MO: Monad<M>, machine: Machine<M>, op: Op): Kind<M, Machine<M>> {
+fun <M> Monad<M>.processOp(machine: Machine<M>, op: Op): Kind<M, Machine<M>> {
     return when (op) {
-        is Inc -> MO.just(machine.update {(it + op.n).toByte() })
-        is Right -> MO.just(machine.shift(op.n))
-        is Out -> MO.run {
+        is Inc -> just(machine.update {(it + op.n).toByte() })
+        is Right -> just(machine.shift(op.n))
+        is Out -> run {
             machine.io.putByte(machine.peek()).mapConst(machine)
         }
-        is Inp -> MO.run {
+        is Inp -> run {
             machine.io.getByte().flatMap { b: Byte? ->
                 just(if (b == null) machine else machine.poke(b))
             }
         }
 
         is Loop -> {
-            fun go(machine: Machine<M>): Kind<M, Machine<M>>  = MO.run {
+            fun go(machine: Machine<M>): Kind<M, Machine<M>>  = run {
                 if(machine.peek() == 0.toByte())
                     just(machine)
                 else
-                    eval(MO, machine, Program(op.operations)).flatMap {go(it)}
+                    eval(machine, Program(op.operations)).flatMap {go(it)}
             }
             go(machine)
         }
     }
 }
 
-fun <M> eval(MO: Monad<M>, machine: Machine<M>, program: Program): Kind<M, Machine<M>> =
-    program.operations.foldM(MO, machine, {mac, op -> processOp(MO, mac, op)})
+fun <M> Monad<M>.eval(machine: Machine<M>, program: Program): Kind<M, Machine<M>> =
+    program.operations.foldM(this, machine, {mac, op -> processOp(mac, op)})
 
 fun evalFile(file: File, memory: Int = 1024): Unit {
     val program = parse(file.readText())
     val machine = Machine(List(memory) {0}, 0, IOMachine)
 
     if (program != null)
-        eval(IO.monad(), machine, program).fix().unsafeRunAsync {
+        IO.monad().eval(machine, program).fix().unsafeRunAsync {
             it.fold(
                     {println("Error evaluating program: " + it.localizedMessage + "\n\n" + it.printStackTrace())},
                     {println("Done.")}
