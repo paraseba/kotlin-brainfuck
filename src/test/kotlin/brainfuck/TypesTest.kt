@@ -5,13 +5,14 @@ import arrow.core.extensions.id.monad.monad
 import arrow.core.fix
 import arrow.mtl.State
 import arrow.mtl.extensions.fx
+import kotlinx.collections.immutable.persistentListOf
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.shouldBe
 
 
 class TypesTest : StringSpec({
     "update machine memory" {
-        Machine(listOf(0), 0, StateMachine).update {(it+1).toByte()}.peek() shouldBe 1
+        Machine(persistentListOf(0), 0, StateMachine).update {(it+1).toByte()}.peek() shouldBe 1
     }
 
     "run State effect on machine" {

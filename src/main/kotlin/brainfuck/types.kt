@@ -8,6 +8,7 @@ import arrow.fx.IO
 import arrow.mtl.State
 import arrow.mtl.StatePartialOf
 import arrow.mtl.extensions.fx
+import kotlinx.collections.immutable.PersistentList
 import java.util.*
 
 
@@ -23,10 +24,10 @@ data class Program(val operations: List<Op>)
 
 typealias MemOffset = Int
 
-data class Machine<M>(val memory: List<Byte>, val pointer: MemOffset, val io: MachineIO<M>) {
+data class Machine<M>(val memory: PersistentList<Byte>, val pointer: MemOffset, val io: MachineIO<M>) {
 
     fun update(f : (Byte) -> Byte): Machine<M> =
-            copy(memory = memory.subList(0, pointer) + f(peek()) + memory.subList(minOf(pointer + 1, memory.size), memory.size))
+            copy(memory = memory.set(pointer, f(peek())))
 
     fun shift(offset: MemOffset) : Machine<M> = copy(pointer = pointer + offset)
 

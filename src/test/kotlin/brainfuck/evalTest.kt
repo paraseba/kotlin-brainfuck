@@ -10,9 +10,13 @@ import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.nulls.shouldNotBeNull
 import io.kotest.matchers.sequences.shouldBeEmpty
 import io.kotest.matchers.shouldBe
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 
 
 class EvalTest : StringSpec({
+
+    val emptyMemory = List(1024) {0.toByte()}.toPersistentList()
 
     val helloWorld = "++++++++[>++++[>++>+++>+++>+<<<<-]>+>+>->>+[<]<-]>>.>---.+++++++..+++.>>.<-.<.+++.------.--------.>>+.>++."
     val fibonacci = "+++++++++++\n" +
@@ -29,7 +33,7 @@ class EvalTest : StringSpec({
 
     "add two numbers in State" {
         val emptyIo = MemIO(emptySequence(), emptyList())
-        val machine = Machine(listOf(25, 40), 0, StateMachine)
+        val machine = Machine(persistentListOf(25, 40), 0, StateMachine)
         val program: Program? = parse("[->+<]>.") // add 25 and 40, then print it
 
         program.shouldNotBeNull()
@@ -43,7 +47,7 @@ class EvalTest : StringSpec({
     }
 
     "add two numbers in IO" {
-        val machine = Machine(listOf(25, 40), 0, IOMachine)
+        val machine = Machine(persistentListOf(25, 40), 0, IOMachine)
         val program: Program? = parse("[->+<]>.") // add 25 and 40, then print it
 
         program.shouldNotBeNull()
@@ -58,7 +62,7 @@ class EvalTest : StringSpec({
         val a: Byte = 10
         val b: Byte = 11
         val emptyIo = MemIO(emptySequence(), emptyList())
-        val machine = Machine(listOf(a, b, 0, 0), 0, StateMachine)
+        val machine = Machine(persistentListOf(a, b, 0, 0), 0, StateMachine)
         // taken from https://www.codingame.com/playgrounds/50426/getting-started-with-brainfuck/multiplication
         val program: Program? = parse("[>[->+>+<<]>[-<+>]<<-]")
 
@@ -72,7 +76,7 @@ class EvalTest : StringSpec({
     "multiply two numbers in IO" {
         val a: Byte = 10
         val b: Byte = 11
-        val machine = Machine(listOf(a, b, 0, 0), 0, IOMachine)
+        val machine = Machine(persistentListOf(a, b, 0, 0), 0, IOMachine)
         // taken from https://www.codingame.com/playgrounds/50426/getting-started-with-brainfuck/multiplication
         val program: Program? = parse("[>[->+>+<<]>[-<+>]<<-]")
 
@@ -87,7 +91,7 @@ class EvalTest : StringSpec({
 
     "print Hello World in State" {
         val emptyIo = MemIO(emptySequence(), emptyList())
-        val machine = Machine(List(1024) {0}, 0, StateMachine)
+        val machine = Machine(emptyMemory, 0, StateMachine)
         val program: Program? = parse(helloWorld)
 
         program.shouldNotBeNull()
@@ -98,7 +102,7 @@ class EvalTest : StringSpec({
     }
 
     "print Hello World in IO" {
-        val machine = Machine(List(1024) {0}, 0, IOMachine)
+        val machine = Machine(emptyMemory, 0, IOMachine)
         val program: Program? = parse(helloWorld)
 
         program.shouldNotBeNull()
@@ -109,7 +113,7 @@ class EvalTest : StringSpec({
 
     "print fibonacci in State" {
         val emptyIo = MemIO(emptySequence(), emptyList())
-        val machine = Machine(List(1024) { 0 }, 0, StateMachine)
+        val machine = Machine(emptyMemory, 0, StateMachine)
         val program: Program? = parse(fibonacci)
 
         program.shouldNotBeNull()
@@ -120,7 +124,7 @@ class EvalTest : StringSpec({
     }
 
     "print fibonacci in IO" {
-        val machine = Machine(List(1024) { 0 }, 0, IOMachine)
+        val machine = Machine(emptyMemory, 0, IOMachine)
         val program: Program? = parse(fibonacci)
 
         program.shouldNotBeNull()

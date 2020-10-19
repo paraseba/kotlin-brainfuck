@@ -6,6 +6,7 @@ import arrow.fx.IO
 import arrow.fx.extensions.io.monad.monad
 import arrow.fx.fix
 import arrow.typeclasses.Monad
+import kotlinx.collections.immutable.toPersistentList
 import java.io.File
 
 
@@ -37,9 +38,9 @@ fun <M> Monad<M>.processOp(machine: Machine<M>, op: Op): Kind<M, Machine<M>> {
 fun <M> Monad<M>.eval(machine: Machine<M>, program: Program): Kind<M, Machine<M>> =
     program.operations.foldM(this, machine, {mac, op -> processOp(mac, op)})
 
-fun evalFile(file: File, memory: Int = 1024): Unit {
+fun evalFile(file: File, memory: Int = 1024*1024): Unit {
     val program = parse(file.readText())
-    val machine = Machine(List(memory) {0}, 0, IOMachine)
+    val machine = Machine(List(memory) {0.toByte()}.toPersistentList(), 0, IOMachine)
 
     if (program != null)
         IO.monad().eval(machine, program).fix().unsafeRunAsync {
@@ -50,5 +51,4 @@ fun evalFile(file: File, memory: Int = 1024): Unit {
         }
     else
         println("Can't parse program")
-
 }

@@ -30,6 +30,7 @@ allprojects {
     compileKotlin.kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
+
     compileTestKotlin.kotlinOptions {
         jvmTarget = JavaVersion.VERSION_1_8.toString()
     }
@@ -58,11 +59,8 @@ dependencies {
     implementation( "io.arrow-kt:arrow-fx:$arrowVersion")
     kapt("io.arrow-kt:arrow-meta:$arrowVersion")
 
-    // Use the Kotlin test library.
-    //testImplementation("org.jetbrains.kotlin:kotlin-test")
+    implementation("org.jetbrains.kotlinx:kotlinx-collections-immutable:0.3.3")
 
-    // Use the Kotlin JUnit integration.
-    //testImplementation("org.jetbrains.kotlin:kotlin-test-junit")
 
     testImplementation("io.kotest:kotest-runner-junit5:4.3.0") // for kotest framework
     testImplementation("io.kotest:kotest-assertions-core:4.3.0") // for kotest core jvm assertions
