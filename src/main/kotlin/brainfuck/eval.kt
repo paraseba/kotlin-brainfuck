@@ -40,7 +40,7 @@ fun <M> Monad<M>.eval(machine: Machine<M>, program: Program): Kind<M, Machine<M>
 
 fun evalFile(file: File, memory: Int = 1024*1024): Unit {
     val program = parse(file.readText())
-    val machine = Machine(List(memory) {0.toByte()}.toPersistentList(), 0, IOMachine)
+    val machine = Machine(List(memory) {0.toByte()}.toPersistentList(), 0, IOMachine.std)
 
     if (program != null)
         IO.monad().eval(machine, program).fix().unsafeRunAsync {

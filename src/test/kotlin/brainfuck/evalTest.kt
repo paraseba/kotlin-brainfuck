@@ -31,6 +31,8 @@ class EvalTest : StringSpec({
             "<<<<<<<<<<[>>>+>+<<<<-]>>>>[<<<<+>>>>-]<-[>>.>.<<<\n" +
             "[-]]<<[>>+>+<<<-]>>>[<<<+>>>-]<<[<+>-]>[<+>-]<<<-]"
 
+    val head = "+>>>>>>>>>>-[,+[-.----------[[-]>]<->]<]" // taken from http://www.hevanet.com/cristofd/brainfuck/head.b
+
     "add two numbers in State" {
         val emptyIo = MemIO(emptySequence(), emptyList())
         val machine = Machine(persistentListOf(25, 40), 0, StateMachine)
@@ -47,7 +49,7 @@ class EvalTest : StringSpec({
     }
 
     "add two numbers in IO" {
-        val machine = Machine(persistentListOf(25, 40), 0, IOMachine)
+        val machine = Machine(persistentListOf(25, 40), 0, IOMachine.std)
         val program: Program? = parse("[->+<]>.") // add 25 and 40, then print it
 
         program.shouldNotBeNull()
@@ -76,7 +78,7 @@ class EvalTest : StringSpec({
     "multiply two numbers in IO" {
         val a: Byte = 10
         val b: Byte = 11
-        val machine = Machine(persistentListOf(a, b, 0, 0), 0, IOMachine)
+        val machine = Machine(persistentListOf(a, b, 0, 0), 0, IOMachine.std)
         // taken from https://www.codingame.com/playgrounds/50426/getting-started-with-brainfuck/multiplication
         val program: Program? = parse("[>[->+>+<<]>[-<+>]<<-]")
 
@@ -102,7 +104,7 @@ class EvalTest : StringSpec({
     }
 
     "print Hello World in IO" {
-        val machine = Machine(emptyMemory, 0, IOMachine)
+        val machine = Machine(emptyMemory, 0, IOMachine.std)
         val program: Program? = parse(helloWorld)
 
         program.shouldNotBeNull()
@@ -124,10 +126,36 @@ class EvalTest : StringSpec({
     }
 
     "print fibonacci in IO" {
-        val machine = Machine(emptyMemory, 0, IOMachine)
+        val machine = Machine(emptyMemory, 0, IOMachine.std)
         val program: Program? = parse(fibonacci)
 
         program.shouldNotBeNull()
         IO.monad().eval(machine, program).fix().unsafeRunSync()
+    }
+
+    "print 10 lines of input in State" {
+        val input = (1..20).joinToString(separator = "\n").toByteArray().asSequence()
+        val emptyIo = MemIO(input, emptyList())
+        val machine = Machine(emptyMemory, 0, StateMachine)
+        val program: Program? = parse(head)
+
+        program.shouldNotBeNull()
+
+        val e = State().monad<MemIO>().eval(machine, program)
+        val (ioAfter) = e.run(emptyIo).extract()
+        ioAfter.printOut() shouldBe (1..10).joinToString(separator = "\n", postfix = "\n")
+    }
+
+    "print 10 lines of input in IO" {
+        val input = (1..20).joinToString(separator = "\n").toByteArray().toTypedArray()
+        val (iomac, output) = IOMachine.memory(input)
+        val machine = Machine(emptyMemory, 0, iomac)
+        val program: Program? = parse(head)
+
+        program.shouldNotBeNull()
+
+        IO.monad().eval(machine, program).fix().unsafeRunSync()
+        val ioAfter = output.toString()
+        ioAfter shouldBe (1..10).joinToString(separator = "\n", postfix = "\n")
     }
 })

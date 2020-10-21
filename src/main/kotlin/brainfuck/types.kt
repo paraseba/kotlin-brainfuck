@@ -2,14 +2,19 @@ package brainfuck
 
 import arrow.Kind
 import arrow.core.Id
+import arrow.core.Tuple2
 import arrow.core.extensions.id.monad.monad
+import arrow.core.toT
 import arrow.fx.ForIO
 import arrow.fx.IO
 import arrow.mtl.State
 import arrow.mtl.StatePartialOf
 import arrow.mtl.extensions.fx
 import kotlinx.collections.immutable.PersistentList
-import java.util.*
+import java.io.ByteArrayInputStream
+import java.io.ByteArrayOutputStream
+import java.io.InputStream
+import java.io.OutputStream
 
 
 sealed class Op
@@ -55,10 +60,24 @@ object StateMachine : MachineIO<StatePartialOf<MemIO>> {
     }
 }
 
-object IOMachine : MachineIO<ForIO> {
-    private val reader = Scanner(System.`in`)
+class IOMachine(val inStream: InputStream, val outStream: OutputStream) : MachineIO<ForIO> {
+    companion object {
+        val std = IOMachine(System.`in`, System.`out`)
 
-    override fun putByte(b: Byte): IO<Unit> = IO  { print(b.toChar()) }
+        fun memory(inputArray: Array<Byte>) : Tuple2<IOMachine, ByteArrayOutputStream> {
+            val output = ByteArrayOutputStream()
+            val input = ByteArrayInputStream(inputArray.toByteArray())
+            return IOMachine(input, output) toT output
+        }
+    }
 
-    override fun getByte(): IO<Byte?> = IO { reader.nextByte() }
+    override fun putByte(b: Byte): IO<Unit> = IO  { outStream.write(b.toInt()) }
+
+    override fun getByte(): IO<Byte?> = IO {
+        val b = inStream.read()
+        if (b == -1)
+            null
+        else
+            b.toByte()
+    }
 }
