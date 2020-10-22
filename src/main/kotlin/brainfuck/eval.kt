@@ -15,10 +15,11 @@ fun <M> Monad<M>.processOp(machine: Machine<M>, op: Op): Kind<M, Machine<M>> {
         is Inc -> just(machine.update {(it + op.n).toByte() })
         is Right -> just(machine.shift(op.n))
         is Out -> run {
-            machine.io.putByte(machine.peek()).mapConst(machine)
+            machine.io.putByte(machine.peek()).replicate(op.n).mapConst(machine)
         }
         is Inp -> run {
-            machine.io.getByte().flatMap { b: Byte? ->
+            machine.io.getByte().replicate(op.n).flatMap { bs: List<Byte?> ->
+                val b = bs.lastOrNull()
                 just(if (b == null) machine else machine.poke(b))
             }
         }

@@ -1,23 +1,28 @@
 package brainfuck
 
 import arrow.core.SequenceK
-import parsercomb.parser.alternative.*
+import parsercomb.parser.alternative.alt
+import parsercomb.parser.alternative.lazyOrElse
+import parsercomb.parser.alternative.many
+import parsercomb.parser.alternative.some
 import parsercomb.parser.apply.apTap
 import parsercomb.parser.apply.followedBy
-import parsercomb.types.*
-import parsercomb.parser.functor.mapConst
 import parsercomb.parser.apply.mapN
 import parsercomb.parser.functor.map
+import parsercomb.types.Parser
+import parsercomb.types.charParser
+import parsercomb.types.eof
+import parsercomb.types.noneOf
 
 
-fun mkParser(c: Char, op: Op) : Parser<Op> = charParser(c).mapConst(op)
+fun mkParser(c: Char, op: (Int) -> Op) : Parser<Op> = charParser(c).some().map { op(it.toList().size) }
 
-val incP   = mkParser('+', Inc(1))
-val decP   = mkParser('-', Inc(-1))
-val leftP  = mkParser('<', Right(-1))
-val rightP = mkParser('>', Right(1))
-val inpP   = mkParser(',', Inp)
-val outP   = mkParser('.', Out(1))
+val incP   = mkParser('+', ::Inc)
+val decP   = mkParser('-') { Inc(it * -1) }
+val leftP  = mkParser('<') { Right(it * -1) }
+val rightP = mkParser('>', ::Right)
+val inpP   = mkParser(',', ::Inp)
+val outP   = mkParser('.', ::Out)
 val simpleOpP : Parser<Op> = incP alt decP alt leftP alt rightP alt inpP alt outP
 
 const val validChars = "+-<>,.[]"

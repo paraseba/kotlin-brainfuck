@@ -89,8 +89,6 @@ class EvalTest : StringSpec({
         machineAfter.memory shouldBe listOf(0,b,0,a*b).map {it.toByte()}
     }
 
-
-
     "print Hello World in State" {
         val emptyIo = MemIO(emptySequence(), emptyList())
         val machine = Machine(emptyMemory, 0, StateMachine)
